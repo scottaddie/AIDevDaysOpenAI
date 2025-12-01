@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using OpenAI;
 using OpenAI.Responses;
 using System.ClientModel;
-using System.ClientModel.Primitives;
 using AIDevDaysOpenAI.Models;
 
 namespace AIDevDaysOpenAI.Services;
@@ -23,8 +22,6 @@ public class OpenAIService(
     private const string StripeKeyCacheKey = "STRIPE-OAUTH-ACCESS-TOKEN";
 
 #pragma warning disable OPENAI001
-    private ResponseCreationOptions? _gpt5Options;
-
     public async Task<string> UseResponsesAsync(string prompt)
     {
         string? openAiApiKey = await GetOpenAIApiKey();
@@ -36,9 +33,9 @@ public class OpenAIService(
             OpenAIResponseClient responseClient = openAIClient.GetOpenAIResponseClient(_settings.ModelName);
             OpenAIResponse response;
 
-            if (_settings.ModelName == "gpt-5")
+            if (_settings.ModelName == "gpt-5.1")
             {
-                ResponseCreationOptions options = GetGpt5Options();
+                ResponseCreationOptions options = GetGpt51Options();
                 response = await responseClient.CreateResponseAsync(prompt, options);
             }
             else
@@ -198,18 +195,26 @@ public class OpenAIService(
     private void HandleToolCall(McpToolCallItem callItem) =>
         _settings.McpToolsUsed.Add($"{callItem.ServerLabel}.{callItem.ToolName}");
 
-    private ResponseCreationOptions GetGpt5Options()
+    private ResponseCreationOptions GetGpt51Options()
     {
-        // The REST API spec hasn't been updated to include gpt-5 properties.
-        // As a workaround, force additional members into the options properties bag to tune perf.
-        // For more context, see https://github.com/openai/openai-dotnet/issues/593 and
-        // https://platform.openai.com/docs/api-reference/responses/create.
-        return _gpt5Options ??= ((IJsonModel<ResponseCreationOptions>)new ResponseCreationOptions())
-            .Create(BinaryData.FromObjectAsJson(new
+        // Tune perf of GPT-5.1 model
+        ResponseTextOptions textOptions = new();
+#pragma warning disable SCME0001
+        // See https://platform.openai.com/docs/api-reference/responses/create#responses_create-text-verbosity
+        textOptions.Patch.Set("$.verbosity"u8, "low");
+#pragma warning restore SCME0001
+
+        ResponseCreationOptions creationOptions = new()
+        {
+            ReasoningOptions = new ResponseReasoningOptions
             {
-                reasoning = new { effort = "minimal" },
-                text = new { verbosity = "low" }
-            }), ModelReaderWriterOptions.Json)!;
+                // See https://platform.openai.com/docs/api-reference/responses/create#responses_create-reasoning-effort
+                ReasoningEffortLevel = ResponseReasoningEffortLevel.Minimal,
+            },
+            TextOptions = textOptions,
+        };
+
+        return creationOptions;
     }
 #pragma warning restore OPENAI001
 

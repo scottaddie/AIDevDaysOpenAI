@@ -1,0 +1,10 @@
+﻿namespace AIDevDaysOpenAI.Models;
+
+public class OpenAISettings
+{
+    public required string ModelName { get; set; } = string.Empty;
+
+    public Dictionary<string, HashSet<McpToolInfo>> McpToolsListed { get; set; } = new();
+
+    public HashSet<string> McpToolsUsed { get; set; } = new();
+}

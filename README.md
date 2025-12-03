@@ -9,6 +9,12 @@
 
 ## Provision infrastructure and deploy app
 
+1. Run the following command to authenticate:
+
+    ```
+    azd auth login
+    ```
+
 1. In a terminal, run the following commands to set environment variables. Replace the `<key>` placeholders with your own values:
 
     ```

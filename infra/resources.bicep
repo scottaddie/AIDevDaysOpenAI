@@ -103,6 +103,13 @@ module openAI 'br/public:avm/res/cognitive-services/account:0.7.1' = {
     tags: tags
     kind: 'OpenAI'
     customSubDomainName: '${abbrs.cognitiveServicesAccounts}${resourceToken}'
+    networkAcls: {
+      defaultAction: 'Allow'
+      bypass: 'AzureServices'
+    }
+    // Allow key-based authentication
+    // Should be disabled in production environments in favor of managed identities
+    disableLocalAuth: false
     roleAssignments: [
       {
         principalId: srcIdentity.outputs.principalId

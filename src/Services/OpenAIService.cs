@@ -208,8 +208,10 @@ public class OpenAIService(
         {
             ReasoningOptions = new ResponseReasoningOptions
             {
+                // GPT-5.1 defaults to no reasoning. Set to low to enable lightweight reasoning
+                // (faster responses and reduced token usage).
                 // See https://platform.openai.com/docs/api-reference/responses/create#responses_create-reasoning-effort
-                ReasoningEffortLevel = ResponseReasoningEffortLevel.Minimal,
+                ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
             },
             TextOptions = textOptions,
         };

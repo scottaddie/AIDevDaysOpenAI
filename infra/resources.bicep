@@ -57,7 +57,7 @@ param azureOpenAiApiKey string
 @secure()
 param stripeOauthAccessToken string
 
-module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
+module keyVault 'br/public:avm/res/key-vault/vault:0.13.3' = {
   name: 'keyvault'
   params: {
     name: '${abbrs.keyVaultVaults}${resourceToken}'
@@ -95,7 +95,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
 }
 
 // Azure OpenAI
-module openAI 'br/public:avm/res/cognitive-services/account:0.7.1' = {
+module openAI 'br/public:avm/res/cognitive-services/account:0.14.0' = {
   name: 'openai'
   params: {
     name: '${abbrs.cognitiveServicesAccounts}${resourceToken}'
@@ -122,11 +122,25 @@ module openAI 'br/public:avm/res/cognitive-services/account:0.7.1' = {
         roleDefinitionIdOrName: 'Cognitive Services Contributor'
       }
     ]
+    deployments: [
+      {
+        name: 'gpt-5-mini'
+        sku: {
+          name: 'GlobalStandard'
+          capacity: 10
+        }
+        model: {
+          format: 'OpenAI'
+          name: 'gpt-5-mini'
+          version: '2025-08-07'
+        }
+      }
+    ]    
   }
 }
 
 // App Service
-module src 'br/public:avm/res/web/site:0.3.9' = {
+module src 'br/public:avm/res/web/site:0.19.4' = {
   name: 'src'
   params: {
     name: '${abbrs.webSitesAppService}${resourceToken}'
@@ -160,15 +174,19 @@ module src 'br/public:avm/res/web/site:0.3.9' = {
           name: 'AZURE_CLIENT_ID'
           value: srcIdentity.outputs.clientId
         }
+        {
+          name: 'Azure__KeyVault__VaultUri'
+          value: keyVault.outputs.uri
+        }
+        {
+          name: 'Azure__OpenAI__Endpoint'
+          value: openAI.outputs.endpoint
+        }
+        {
+          name: 'AZURE_TOKEN_CREDENTIALS'
+          value: 'ManagedIdentityCredential'
+        }
       ]
-    }
-    appSettingsKeyValuePairs: {
-      APPLICATIONINSIGHTS_CONNECTION_STRING: monitoring.outputs.applicationInsightsConnectionString
-      ASPNETCORE_ENVIRONMENT: 'Development'
-      AZURE_CLIENT_ID: srcIdentity.outputs.clientId
-      Azure__KeyVault__VaultUri: keyVault.outputs.uri
-      Azure__OpenAI__Endpoint: openAI.outputs.endpoint
-      AZURE_TOKEN_CREDENTIALS: 'ManagedIdentityCredential'
     }
   }
 }

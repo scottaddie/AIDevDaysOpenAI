@@ -33,9 +33,9 @@ public class OpenAIService(
             OpenAIResponseClient responseClient = openAIClient.GetOpenAIResponseClient(_settings.ModelName);
             OpenAIResponse response;
 
-            if (_settings.ModelName == "gpt-5.1")
+            if (_settings.ModelName == "gpt-5")
             {
-                ResponseCreationOptions options = GetGpt51Options();
+                ResponseCreationOptions options = GetGpt5Options();
                 response = await responseClient.CreateResponseAsync(prompt, options);
             }
             else
@@ -195,9 +195,9 @@ public class OpenAIService(
     private void HandleToolCall(McpToolCallItem callItem) =>
         _settings.McpToolsUsed.Add($"{callItem.ServerLabel}.{callItem.ToolName}");
 
-    private ResponseCreationOptions GetGpt51Options()
+    private ResponseCreationOptions GetGpt5Options()
     {
-        // Tune perf of GPT-5.1 model
+        // Tune perf of GPT-5 model
         ResponseTextOptions textOptions = new();
 #pragma warning disable SCME0001
         // See https://platform.openai.com/docs/api-reference/responses/create#responses_create-text-verbosity
@@ -208,10 +208,10 @@ public class OpenAIService(
         {
             ReasoningOptions = new ResponseReasoningOptions
             {
-                // GPT-5.1 defaults to no reasoning. Set to low to enable lightweight reasoning
-                // (faster responses and reduced token usage).
+                // GPT-5 defaults to Medium reasoning effort. Set to Minimal to enable lighter
+                // weight reasoning (faster responses and reduced token usage).
                 // See https://platform.openai.com/docs/api-reference/responses/create#responses_create-reasoning-effort
-                ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
+                ReasoningEffortLevel = ResponseReasoningEffortLevel.Minimal,
             },
             TextOptions = textOptions,
         };

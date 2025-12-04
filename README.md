@@ -6,7 +6,8 @@
     - [.NET 10 SDK](https://dotnet.microsoft.com/download)
     - [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
 1. Create an [Azure subscription](https://azure.microsoft.com/free/dotnet/) if you don't already have one
-1. Create a [Stripe account](https://stripe.com/)
+1. Create a [Stripe account](https://stripe.com/) and get a secret key
+1. An OpenAI [API key](https://platform.openai.com/api-keys)
 
 ## Provision infrastructure and deploy app
 

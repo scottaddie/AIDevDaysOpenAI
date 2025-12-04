@@ -53,4 +53,5 @@ module resources 'resources.bicep' = {
     stripeOauthAccessToken: stripeOauthAccessToken
   }
 }
+
 output AZURE_RESOURCE_SRC_ID string = resources.outputs.AZURE_RESOURCE_SRC_ID

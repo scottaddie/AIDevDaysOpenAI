@@ -20,9 +20,6 @@
       "openAiApiKey": {
         "value": "${OPENAI_API_KEY}"
       },
-      "azureOpenAiApiKey": {
-        "value": "${AZURE_OPENAI_API_KEY}"
-      },
       "stripeOauthAccessToken": {
         "value": "${STRIPE_OAUTH_ACCESS_TOKEN}"
       }

@@ -52,9 +52,6 @@ module srcIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.
 param openAiApiKey string
 
 @secure()
-param azureOpenAiApiKey string
-
-@secure()
 param stripeOauthAccessToken string
 
 module keyVault 'br/public:avm/res/key-vault/vault:0.13.3' = {
@@ -81,10 +78,6 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.13.3' = {
       {
         name: 'OPENAI-API-KEY'
         value: openAiApiKey
-      }
-      {
-        name: 'AZURE-OPENAI-API-KEY'
-        value: azureOpenAiApiKey
       }
       {
         name: 'STRIPE-OAUTH-ACCESS-TOKEN'
@@ -135,7 +128,11 @@ module openAI 'br/public:avm/res/cognitive-services/account:0.14.0' = {
           version: '2025-08-07'
         }
       }
-    ]    
+    ]
+    secretsExportConfiguration: {
+      keyVaultResourceId: keyVault.outputs.resourceId
+      accessKey1Name: 'AZURE-OPENAI-API-KEY'
+    }
   }
 }
 

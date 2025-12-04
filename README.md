@@ -20,7 +20,6 @@
 
     ```
     azd env set OPENAI_API_KEY "<key>"
-    azd env set AZURE_OPENAI_API_KEY "<key>"
     azd env set STRIPE_OAUTH_ACCESS_TOKEN "<key>"
     ```
 

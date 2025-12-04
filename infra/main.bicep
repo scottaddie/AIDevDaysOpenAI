@@ -9,7 +9,7 @@ param environmentName string
 @description('Primary location for all resources')
 param location string
 
-@description('Id of the user or app to assign application roles')
+@description('ID of the user or app to assign application roles')
 param principalId string
 
 @description('Principal type of user or app')
@@ -17,9 +17,6 @@ param principalType string
 
 @description('OpenAI API key to access OpenAI services')
 param openAiApiKey string
-
-@description('Azure OpenAI API key to access Azure OpenAI services')
-param azureOpenAiApiKey string
 
 @description('Stripe OAuth access token for payment processing')
 param stripeOauthAccessToken string
@@ -49,7 +46,6 @@ module resources 'resources.bicep' = {
     principalId: principalId
     principalType: principalType
     openAiApiKey: openAiApiKey
-    azureOpenAiApiKey: azureOpenAiApiKey
     stripeOauthAccessToken: stripeOauthAccessToken
   }
 }

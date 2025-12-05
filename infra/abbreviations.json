@@ -1,5 +1,4 @@
 {
-    "aiFoundryAccounts": "aif",
     "analysisServicesServers": "as",
     "apiManagementService": "apim-",
     "appConfigurationStores": "appcs-",
@@ -44,6 +43,8 @@
     "eventGridEventSubscriptions": "evgs-",
     "eventHubNamespaces": "evhns-",
     "eventHubNamespacesEventHubs": "evh-",
+    "foundryAccounts": "aif-",
+    "foundryProjects": "proj-",
     "hdInsightClustersHadoop": "hadoop-",
     "hdInsightClustersHbase": "hbase-",
     "hdInsightClustersKafka": "kafka-",

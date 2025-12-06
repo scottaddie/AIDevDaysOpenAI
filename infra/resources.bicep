@@ -134,7 +134,6 @@ resource foundryProject 'Microsoft.CognitiveServices/accounts/projects@2025-04-0
       '${resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', '${abbrs.managedIdentityUserAssignedIdentities}src-${resourceToken}')}': {}
     }
   }
-  properties: {}
 }
 
 // Model deployment for playground, agents and other tools

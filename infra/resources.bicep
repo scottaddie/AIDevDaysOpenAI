@@ -27,11 +27,13 @@ module appServicePlan 'br/public:avm/res/web/serverfarm:0.2.2' = {
   }
 }
 
+// User-assigned managed identity
 module srcIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.2.1' = {
   name: 'srcidentity'
   params: {
     name: '${abbrs.managedIdentityUserAssignedIdentities}src-${resourceToken}'
     location: location
+    tags: tags
   }
 }
 
@@ -73,14 +75,14 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.13.3' = {
       }
       {
         name: 'AZURE-OPENAI-API-KEY'
-        value: foundry.listKeys().key1
+        value: foundryAccount.listKeys().key1
       }
     ]
   }
 }
 
 // Foundry Account (AIServices variant of CognitiveServices)
-resource foundry 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
+resource foundryAccount 'Microsoft.CognitiveServices/accounts@2025-10-01-preview' = {
   name: '${abbrs.foundryAccounts}${abbrs.cognitiveServicesAccounts}${resourceToken}'
   location: location
   tags: tags
@@ -110,23 +112,9 @@ resource foundry 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
   ]
 }
 
-// Foundry Project
-// Developer APIs are exposed via a project, which groups in- and outputs that relate to one use case
-resource foundryProject 'Microsoft.CognitiveServices/accounts/projects@2025-04-01-preview' = {
-  name: '${abbrs.foundryProjects}${abbrs.cognitiveServicesAccounts}${resourceToken}'
-  parent: foundry
-  location: location
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', '${abbrs.managedIdentityUserAssignedIdentities}src-${resourceToken}')}': {}
-    }
-  }
-}
-
 // Model deployment for playground, agents and other tools
-resource modelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
-  parent: foundry
+resource modelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2025-10-01-preview' = {
+  parent: foundryAccount
   name: 'gpt-5-mini'
   sku: {
     capacity: 10
@@ -143,8 +131,8 @@ resource modelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-
 
 // Role assignments for Foundry Account
 resource foundryRoleAssignmentSrc 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(subscription().id, resourceGroup().id, foundry.name, srcIdentity.name, 'Cognitive Services OpenAI User')
-  scope: foundry
+  name: guid(subscription().id, resourceGroup().id, foundryAccount.name, srcIdentity.name, 'Cognitive Services OpenAI User')
+  scope: foundryAccount
   properties: {
     principalId: srcIdentity.outputs.principalId
     principalType: 'ServicePrincipal'
@@ -153,8 +141,8 @@ resource foundryRoleAssignmentSrc 'Microsoft.Authorization/roleAssignments@2022-
 }
 
 resource foundryRoleAssignmentUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(foundry.id, principalId, 'Cognitive Services Contributor')
-  scope: foundry
+  name: guid(foundryAccount.id, principalId, 'Cognitive Services Contributor')
+  scope: foundryAccount
   properties: {
     principalId: principalId
     principalType: principalType
@@ -199,7 +187,7 @@ module src 'br/public:avm/res/web/site:0.19.4' = {
         }
         {
           name: 'Azure__OpenAI__Endpoint'
-          value: 'https://${foundry.properties.customSubDomainName}.openai.azure.com/'
+          value: 'https://${foundryAccount.properties.customSubDomainName}.openai.azure.com/'
         }
         {
           name: 'AZURE_TOKEN_CREDENTIALS'
@@ -213,7 +201,6 @@ module src 'br/public:avm/res/web/site:0.19.4' = {
 output AZURE_RESOURCE_SRC_ID string = src.outputs.resourceId
 output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.uri
 output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
-output AZURE_OPENAI_ENDPOINT string = foundry.properties.endpoint
-output AZURE_OPENAI_NAME string = foundry.name
-output AZURE_AI_FOUNDRY_NAME string = foundry.name
-output AZURE_AI_PROJECT_NAME string = foundryProject.name
+output AZURE_OPENAI_ENDPOINT string = foundryAccount.properties.endpoint
+output AZURE_OPENAI_NAME string = foundryAccount.name
+output AZURE_AI_FOUNDRY_NAME string = foundryAccount.name

@@ -25,3 +25,17 @@
     ```
 
 1. Run `azd up` to provision your infrastructure and deploy the code to Azure in one step (or run `azd provision` then `azd deploy` to accomplish the tasks separately). Visit the service endpoints listed to see your app up-and-running.
+
+## Run app locally
+
+To run the app locally, complete the following steps:
+
+1. Authenticate your user account to your Azure subscription in the dev tool of your choice. Choices include Visual Studio, VS Code, Azure CLI, Azure Developer CLI, or Azure PowerShell.
+
+1. Add this same user account to the **Cognitive Services OpenAI User** RBAC role on the Foundry resource.
+
+1. In a terminal, navigate to the *src* directory and run the following command:
+
+    ```
+    dotnet run
+    ```

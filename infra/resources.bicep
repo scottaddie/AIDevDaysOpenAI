@@ -13,18 +13,6 @@ param principalType string
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = uniqueString(subscription().id, resourceGroup().id, location)
 
-// Monitor application with Azure Monitor
-module monitoring 'br/public:avm/ptn/azd/monitoring:0.1.0' = {
-  name: 'monitoring'
-  params: {
-    logAnalyticsName: '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
-    applicationInsightsName: '${abbrs.insightsComponents}${resourceToken}'
-    applicationInsightsDashboardName: '${abbrs.portalDashboards}${resourceToken}'
-    location: location
-    tags: tags
-  }
-}
-
 // App Service Plan
 module appServicePlan 'br/public:avm/res/web/serverfarm:0.2.2' = {
   name: 'appserviceplan'
@@ -201,10 +189,6 @@ module src 'br/public:avm/res/web/site:0.19.4' = {
         }
       ]
       appSettings: [
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: monitoring.outputs.applicationInsightsConnectionString
-        }
         {
           name: 'AZURE_CLIENT_ID'
           value: srcIdentity.outputs.clientId

@@ -163,18 +163,8 @@
                     <h6>🛠️ Quick Actions</h6>
                 </div>
                 <div class="card-body">
-                    <button class="btn btn-sm btn-outline-secondary mb-2 w-100" @onclick="@(() => AddSampleMessage("Explain quantum computing in simple terms"))">
-                        Sample: Explain quantum computing
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary mb-2 w-100" @onclick="@(() => AddSampleMessage("Write a haiku about programming"))">
-                        Sample: Write a haiku
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary mb-2 w-100" @onclick="@(() => AddSampleMessage("What are the benefits of using Azure OpenAI over regular OpenAI?"))">
-                        Sample: Azure vs OpenAI
-                    </button>
                     @if (selectedDemo == "mcp")
                     {
-                        <hr />
                         <button class="btn btn-sm btn-dark mb-2 w-100" @onclick="@(() => AddSampleMessage("Generate a Markdown table containing my active AI Dev Days products."))">
                             Stripe: List products
                         </button>
@@ -183,6 +173,18 @@
                         </button>
                         <button class="btn btn-sm btn-dark mb-2 w-100" @onclick="@(() => AddSampleMessage("Convert the AI Dev Days VIP ticket price to EUR. Then create a payment link."))">
                             Stripe + Currency
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-sm btn-outline-secondary mb-2 w-100" @onclick="@(() => AddSampleMessage("Explain quantum computing in simple terms"))">
+                            Sample: Explain quantum computing
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary mb-2 w-100" @onclick="@(() => AddSampleMessage("Write a haiku about programming"))">
+                            Sample: Write a haiku
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary mb-2 w-100" @onclick="@(() => AddSampleMessage("What are the benefits of using Azure OpenAI over regular OpenAI?"))">
+                            Sample: Azure vs OpenAI
                         </button>
                     }
                     <hr />

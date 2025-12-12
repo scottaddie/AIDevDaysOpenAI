@@ -1,10 +1,10 @@
+using AIDevDaysOpenAI.Models;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenAI;
 using OpenAI.Responses;
 using System.ClientModel;
-using AIDevDaysOpenAI.Models;
 
 namespace AIDevDaysOpenAI.Services;
 
@@ -30,13 +30,13 @@ public class OpenAIService(
         try
         {
             OpenAIClient openAIClient = new(new ApiKeyCredential(openAiApiKey));
-            OpenAIResponseClient responseClient = openAIClient.GetOpenAIResponseClient(_settings.ModelName);
-            OpenAIResponse response;
+            ResponsesClient responseClient = openAIClient.GetResponsesClient(_settings.ModelName);
+            ResponseResult response;
 
             if (_settings.ModelName == "gpt-5")
             {
-                ResponseCreationOptions options = GetGpt5Options();
-                response = await responseClient.CreateResponseAsync(prompt, options);
+                CreateResponseOptions options = GetGpt5Options(prompt);
+                response = await responseClient.CreateResponseAsync(options);
             }
             else
             {
@@ -61,11 +61,50 @@ public class OpenAIService(
 
         try
         {
-            OpenAIResponseClient client = new(_settings.ModelName, openAIApiKey);
-            ResponseCreationOptions options = CreateMcpOptions(stripeApiKey);
+            ResponsesClient client = new(_settings.ModelName, openAIApiKey);
+            CreateResponseOptions options = CreateMcpOptions(stripeApiKey, prompt);
+            ResponseResult response = await client.CreateResponseAsync(options);
             
-            OpenAIResponse response = await client.CreateResponseAsync(prompt, options);
-            response = await ProcessResponseWithApprovalsAsync(client, response, options);
+            while (true)
+            {
+                List<ResponseItem> conversationItems = new(response.OutputItems.Count);
+                bool hasApprovalRequests = false;
+
+                foreach (ResponseItem responseItem in response.OutputItems)
+                {
+                    switch (responseItem)
+                    {
+                        case McpToolCallApprovalRequestItem requestItem:
+                            hasApprovalRequests = true;
+                            await HandleApprovalRequestAsync(requestItem, conversationItems);
+                            break;
+                        case McpToolDefinitionListItem listItem:
+                            HandleToolDefinitionList(listItem);
+                            conversationItems.Add(responseItem);
+                            break;
+                        case McpToolCallItem callItem:
+                            HandleToolCall(callItem);
+                            conversationItems.Add(responseItem);
+                            break;
+                        default:
+                            conversationItems.Add(responseItem);
+                            break;
+                    }
+                }
+                
+                if (!hasApprovalRequests)
+                {
+                    break;
+                }
+                
+                options.InputItems.Clear();
+                foreach (var item in conversationItems)
+                {
+                    options.InputItems.Add(item);
+                }
+
+                response = await client.CreateResponseAsync(options);
+            }
             
             string output = response.GetOutputText();
             return string.IsNullOrEmpty(output) ? "Response was empty or null" : output;
@@ -76,10 +115,16 @@ public class OpenAIService(
         }
     }
 
-    private static ResponseCreationOptions CreateMcpOptions(string stripeApiKey)
+    private static CreateResponseOptions CreateMcpOptions(
+        string stripeApiKey,
+        string prompt)
     {
-        return new ResponseCreationOptions
+        return new CreateResponseOptions
         {
+            InputItems =
+            {
+                ResponseItem.CreateUserMessageItem(prompt),
+            },
             Tools =
             {
                 new McpTool(serverLabel: "stripe", serverUri: new Uri("https://mcp.stripe.com"))
@@ -111,55 +156,6 @@ public class OpenAIService(
                 },
             }
         };
-    }
-
-    private async Task<OpenAIResponse> ProcessResponseWithApprovalsAsync(
-        OpenAIResponseClient client, 
-        OpenAIResponse response, 
-        ResponseCreationOptions options)
-    {
-        while (true)
-        {
-            var (conversationItems, hasApprovalRequests) = await ProcessResponseItemsAsync(response.OutputItems);
-            
-            if (!hasApprovalRequests)
-            {
-                return response;
-            }
-            
-            response = await client.CreateResponseAsync(conversationItems, options);
-        }
-    }
-
-    private async Task<(List<ResponseItem> Items, bool HasApprovalRequests)> ProcessResponseItemsAsync(
-        IList<ResponseItem> outputItems)
-    {
-        List<ResponseItem> conversationItems = new(outputItems.Count);
-        bool hasApprovalRequests = false;
-
-        foreach (ResponseItem responseItem in outputItems)
-        {
-            switch (responseItem)
-            {
-                case McpToolCallApprovalRequestItem requestItem:
-                    hasApprovalRequests = true;
-                    await HandleApprovalRequestAsync(requestItem, conversationItems);
-                    break;
-                case McpToolDefinitionListItem listItem:
-                    HandleToolDefinitionList(listItem);
-                    conversationItems.Add(responseItem);
-                    break;
-                case McpToolCallItem callItem:
-                    HandleToolCall(callItem);
-                    conversationItems.Add(responseItem);
-                    break;
-                default:
-                    conversationItems.Add(responseItem);
-                    break;
-            }
-        }
-
-        return (conversationItems, hasApprovalRequests);
     }
 
     private async Task HandleApprovalRequestAsync(
@@ -195,7 +191,7 @@ public class OpenAIService(
     private void HandleToolCall(McpToolCallItem callItem) =>
         _settings.McpToolsUsed.Add($"{callItem.ServerLabel}.{callItem.ToolName}");
 
-    private ResponseCreationOptions GetGpt5Options()
+    private CreateResponseOptions GetGpt5Options(string prompt)
     {
         // Tune perf of GPT-5 model
         ResponseTextOptions textOptions = new();
@@ -204,7 +200,7 @@ public class OpenAIService(
         textOptions.Patch.Set("$.verbosity"u8, "low");
 #pragma warning restore SCME0001
 
-        ResponseCreationOptions creationOptions = new()
+        CreateResponseOptions creationOptions = new()
         {
             ReasoningOptions = new ResponseReasoningOptions
             {
@@ -214,6 +210,10 @@ public class OpenAIService(
                 ReasoningEffortLevel = ResponseReasoningEffortLevel.Minimal,
             },
             TextOptions = textOptions,
+            InputItems =
+            {
+                ResponseItem.CreateUserMessageItem(prompt),
+            }
         };
 
         return creationOptions;

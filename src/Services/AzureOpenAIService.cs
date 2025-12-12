@@ -25,8 +25,8 @@ public class AzureOpenAIService(
         try
         {
             OpenAIClient openAIClient = await GetAzureOpenAIClient(useEntraId);
-            OpenAIResponseClient responseClient = openAIClient.GetOpenAIResponseClient(_settings.DeploymentName);
-            OpenAIResponse response = await responseClient.CreateResponseAsync(prompt);
+            ResponsesClient responseClient = openAIClient.GetResponsesClient(_settings.DeploymentName);
+            ResponseResult response = await responseClient.CreateResponseAsync(prompt);
 
             return response.GetOutputText();
         }

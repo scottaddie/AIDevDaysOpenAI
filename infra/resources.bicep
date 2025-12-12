@@ -129,6 +129,27 @@ resource modelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2025-
   }
 }
 
+// Foundry Project
+resource foundryProject 'Microsoft.CognitiveServices/accounts/projects@2025-10-01-preview' = {
+  parent: foundryAccount
+  name: 'project-${resourceToken}'
+  location: location
+  tags: tags
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', '${abbrs.managedIdentityUserAssignedIdentities}src-${resourceToken}')}': {}
+    }
+  }
+  properties: {
+    displayName: 'Foundry Project'
+    description: 'Foundry project for AI services'
+  }
+  dependsOn: [
+    srcIdentity
+  ]
+}
+
 // Role assignments for Foundry Account
 resource foundryRoleAssignmentSrc 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(subscription().id, resourceGroup().id, foundryAccount.name, srcIdentity.name, 'Cognitive Services OpenAI User')
@@ -204,3 +225,5 @@ output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
 output AZURE_OPENAI_ENDPOINT string = foundryAccount.properties.endpoint
 output AZURE_OPENAI_NAME string = foundryAccount.name
 output AZURE_AI_FOUNDRY_NAME string = foundryAccount.name
+output AZURE_AI_FOUNDRY_PROJECT_ID string = foundryProject.id
+output AZURE_AI_FOUNDRY_PROJECT_NAME string = foundryProject.name

@@ -165,13 +165,13 @@
                 <div class="card-body">
                     @if (selectedDemo == "mcp")
                     {
-                        <button class="btn btn-sm btn-dark mb-2 w-100" @onclick="@(() => AddSampleMessage("Generate a Markdown table containing my active AI Dev Days products."))">
+                        <button class="btn btn-sm btn-dark mb-2 w-100" @onclick="@(() => AddSampleMessage("Generate a 2-column Markdown table containing my active AI Dev Days products. Column 1 is the product name. Column 2 is the USD price."))">
                             Stripe: List products
                         </button>
                         <button class="btn btn-sm btn-dark mb-2 w-100" @onclick="@(() => AddSampleMessage("Convert $200 USD to EUR."))">
                             Currency: USD to EUR
                         </button>
-                        <button class="btn btn-sm btn-dark mb-2 w-100" @onclick="@(() => AddSampleMessage("Convert the AI Dev Days VIP ticket price to EUR. Then create a payment link."))">
+                        <button class="btn btn-sm btn-dark mb-2 w-100" @onclick="@(() => AddSampleMessage("Create a EUR payment link for the AI Dev Days experience product."))">
                             Stripe + Currency
                         </button>
                     }

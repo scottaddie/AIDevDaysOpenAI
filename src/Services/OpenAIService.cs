@@ -33,7 +33,7 @@ public class OpenAIService(
             ResponsesClient responseClient = openAIClient.GetResponsesClient(_settings.ModelName);
             ResponseResult response;
 
-            if (_settings.ModelName == "gpt-5")
+            if (_settings.ModelName == "gpt-5.1")
             {
                 CreateResponseOptions options = GetGpt5Options(prompt);
                 response = await responseClient.CreateResponseAsync(options);
@@ -207,7 +207,7 @@ public class OpenAIService(
                 // GPT-5 defaults to Medium reasoning effort. Set to Minimal to enable lighter
                 // weight reasoning (faster responses and reduced token usage).
                 // See https://platform.openai.com/docs/api-reference/responses/create#responses_create-reasoning-effort
-                ReasoningEffortLevel = ResponseReasoningEffortLevel.Minimal,
+                ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
             },
             TextOptions = textOptions,
             InputItems =
